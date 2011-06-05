@@ -72,10 +72,19 @@ public class InfoLogger implements Runnable {
 		boolean onWorldBlacklist = false;
 		
 		try {
-			statement.executeUpdate("DROP TABLE *");
+			statement.execute("DELETE * FROM player;" 
+					+ "CREATE TABLE IF NOT EXISTS player ("
+					+ "id " + "int,"
+					+ "name " + "VARCHAR(20),"
+					+ "world " + "VARCHAR(20),"
+					+ "x " + "DOUBLE PRECISION(10,2),"
+					+ "z " + "DOUBLE PRECISION(10,2),"
+					+ "y " + "DOUBLE PRECISION(10,2),"
+					+ "health " + "DOUBLE PRECISION(3,1)"
+					+ ");");
 		}
 		catch(SQLException e) {
-			System.out.println("[SQLStats] Unable to remove data from database:");
+			System.out.println("[SQLStats] Unable to remove player data OR create player table:");
 			e.printStackTrace();
 		}
 		for(int i = 0; i < connectedPlayers.length; i++) {
@@ -123,10 +132,18 @@ public class InfoLogger implements Runnable {
 					|| (!plugin.config.playerWhitelistEnabled && !plugin.config.worldWhitelistEnabled)
 					|| (!plugin.config.playerBlacklistEnabled && !plugin.config.playerBlacklistEnabled)) {
 				try {
-					statement.execute("CREATE TABLE IF NOT EXISTS " + playerName);
+					statement.execute("INSERT INTO player (id, name, world, x, z, y, health)"
+							+ "values(" + Integer.toString(i+1) + ", "
+							+ playerName + ", "
+							+ playerWorld + ", "
+							+ playerX +  ", "
+							+ playerZ +  ", "
+							+ playerY +  ", "
+							+ playerHealth
+							+ ");" );
 				}
-				catch(SQLException e) {
-					System.out.println("[SQLStats] Unable to create database for " + playerName + ":");
+				catch (SQLException e) {
+					System.out.println("Unable to enter player data into the database:");
 					e.printStackTrace();
 				}
 			}
