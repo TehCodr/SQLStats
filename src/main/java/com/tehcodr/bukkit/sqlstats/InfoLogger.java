@@ -40,7 +40,8 @@ public class InfoLogger implements Runnable {
             System.out.println ("[SQLStats] Database connection established");
         }
         catch (Exception e) {
-            System.out.println ("[SQLStats] Cannot connect to database server");
+            System.out.println ("[SQLStats] Cannot connect to database server:");
+            e.printStackTrace();
         }
         finally {
             if (con != null) {
@@ -48,7 +49,10 @@ public class InfoLogger implements Runnable {
                     con.close();
                     System.out.println ("[SQLStats] Database connection terminated");
                 }
-                catch (Exception e) {}
+                catch (SQLException e) {
+                	System.out.println("[SQLStats] Unable to terminate connection:");
+                	e.printStackTrace();
+                }
             }
         }
 	}
@@ -68,10 +72,11 @@ public class InfoLogger implements Runnable {
 		boolean onWorldBlacklist = false;
 		
 		try {
-			statement.executeUpdate("DROP TABLE IF EXISTS *");
+			statement.executeUpdate("DROP TABLE *");
 		}
-		catch(Exception e) {
-			System.out.println("[SQLStats] Unable to remove data from database");
+		catch(SQLException e) {
+			System.out.println("[SQLStats] Unable to remove data from database:");
+			e.printStackTrace();
 		}
 		for(int i = 0; i < connectedPlayers.length; i++) {
 			playerName = connectedPlayers[i].getName();
@@ -117,7 +122,13 @@ public class InfoLogger implements Runnable {
 					|| (plugin.config.worldBlacklistEnabled && !onWorldBlacklist)
 					|| (!plugin.config.playerWhitelistEnabled && !plugin.config.worldWhitelistEnabled)
 					|| (!plugin.config.playerBlacklistEnabled && !plugin.config.playerBlacklistEnabled)) {
-				//Log variables into SQL
+				try {
+					statement.execute("CREATE TABLE IF NOT EXISTS " + playerName);
+				}
+				catch(SQLException e) {
+					System.out.println("[SQLStats] Unable to create database for " + playerName + ":");
+					e.printStackTrace();
+				}
 			}
 		}
 	}
